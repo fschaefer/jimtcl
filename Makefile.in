@@ -185,6 +185,10 @@ win32.so: jim-win32.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-win32.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-win32.o $(SH_LIBJIM) @LDLIBS_win32@
 
+base64.so: jim-base64.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-base64.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-base64.o $(SH_LIBJIM) @LDLIBS_base64@
+
 md5.so: jim-md5.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-md5.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-md5.o $(SH_LIBJIM) @LDLIBS_md5@

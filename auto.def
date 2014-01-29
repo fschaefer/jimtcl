@@ -49,6 +49,7 @@ options {
         binary    - Tcl-compatible 'binary' command
         readline  - Interface to libreadline
         rlprompt  - Tcl wrapper around the readline extension
+        base64    - Provide base64 command
         md5       - Provide md5 command
         mk        - Interface to Metakit
         tclprefix - Support for the tcl::prefix command
@@ -211,6 +212,7 @@ global extdb
 dict set extdb attrs {
     aio       { static }
     array     {}
+    base64    { optional }
     binary    { tcl }
     clock     {}
     eventloop { static }

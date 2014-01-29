@@ -51,6 +51,7 @@ options {
         rlprompt  - Tcl wrapper around the readline extension
         base64    - Provide base64 command
         md5       - Provide md5 command
+        thotp     - Provide totp / hotp command for One-Time Password generation
         mk        - Interface to Metakit
         tclprefix - Support for the tcl::prefix command
         sqlite3   - Interface to sqlite3
@@ -222,6 +223,7 @@ dict set extdb attrs {
     history   {}
     load      { static }
     md5       { optional }
+    thotp     { optional }
     mk        { cpp optional }
     namespace { static }
     nshelper  { tcl optional }
@@ -254,6 +256,7 @@ dict set extdb info {
     glob     { dep readdir }
     load     { check {[have-feature dlopen-compat] || [cc-check-function-in-lib dlopen dl]} libdep lib_dlopen }
     md5      { check {[check-crypto]} libdep lib_crypto }
+    thotp    { check {[check-crypto]} libdep lib_crypto }
     mk       { check {[check-metakit]} libdep lib_mk }
     namespace { dep nshelper }
     posix    { check {[have-feature waitpid]} }

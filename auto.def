@@ -49,6 +49,7 @@ options {
         binary    - Tcl-compatible 'binary' command
         readline  - Interface to libreadline
         rlprompt  - Tcl wrapper around the readline extension
+        md5       - Provide md5 command
         mk        - Interface to Metakit
         tclprefix - Support for the tcl::prefix command
         sqlite3   - Interface to sqlite3
@@ -218,6 +219,7 @@ dict set extdb attrs {
     glob      { tcl }
     history   {}
     load      { static }
+    md5       { optional }
     mk        { cpp optional }
     namespace { static }
     nshelper  { tcl optional }
@@ -249,6 +251,7 @@ dict set extdb info {
     exec     { check {([have-feature vfork] && [have-feature waitpid]) || [have-feature system]} }
     glob     { dep readdir }
     load     { check {[have-feature dlopen-compat] || [cc-check-function-in-lib dlopen dl]} libdep lib_dlopen }
+    md5      { check {[check-crypto]} libdep lib_crypto }
     mk       { check {[check-metakit]} libdep lib_mk }
     namespace { dep nshelper }
     posix    { check {[have-feature waitpid]} }
@@ -278,6 +281,15 @@ proc check-metakit {} {
         } else {
             msg-result "not found"
         }
+    }
+    return $found
+}
+
+proc check-crypto {} {
+    set found 0
+    if {[cc-check-function-in-lib MD5_Init crypto]} {
+        define lib_crypto -lcrypto
+        incr found
     }
     return $found
 }

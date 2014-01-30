@@ -1,0 +1,11 @@
+source [file dirname [info script]]/testing.tcl
+
+test base64-1.1 "Base64 encode a string" {
+    base64 encode foobar
+} {Zm9vYmFy}
+
+test base64-1.2 "Base64 decode a string" {
+    base64 decode Zm9vYmFy
+} {foobar}
+
+testreport

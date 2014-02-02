@@ -197,6 +197,10 @@ thotp.so: jim-thotp.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-thotp.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-thotp.o $(SH_LIBJIM) @LDLIBS_thotp@
 
+zeromq.so: jim-zeromq.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-zeromq.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-zeromq.o $(SH_LIBJIM) @LDLIBS_zeromq@
+
 mk.so: jim-mk.cpp
 	$(CXX) $(CXXFLAGS) $(SHOBJ_CFLAGS) -c -o jim-mk.o $> $^
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-mk.o $(SH_LIBJIM) @LDLIBS_mk@

@@ -51,6 +51,7 @@ options {
         rlprompt  - Tcl wrapper around the readline extension
         base64    - Provide base64 command
         md5       - Provide md5 command
+        zeromq    - Provide zeromq command
         thotp     - Provide totp / hotp command for One-Time Password generation
         mk        - Interface to Metakit
         tclprefix - Support for the tcl::prefix command
@@ -223,6 +224,7 @@ dict set extdb attrs {
     history   {}
     load      { static }
     md5       { optional }
+    zeromq    { optional }
     thotp     { optional }
     mk        { cpp optional }
     namespace { static }
@@ -257,6 +259,7 @@ dict set extdb info {
     load     { check {[have-feature dlopen-compat] || [cc-check-function-in-lib dlopen dl]} libdep lib_dlopen }
     md5      { check {[check-crypto]} libdep lib_crypto }
     thotp    { check {[check-crypto]} libdep lib_crypto }
+    zeromq   { check {[check-zmq] && [check-czmq]} libdep "lib_zmq lib_czmq" }
     mk       { check {[check-metakit]} libdep lib_mk }
     namespace { dep nshelper }
     posix    { check {[have-feature waitpid]} }
@@ -294,6 +297,24 @@ proc check-crypto {} {
     set found 0
     if {[cc-check-function-in-lib MD5_Init crypto]} {
         define lib_crypto -lcrypto
+        incr found
+    }
+    return $found
+}
+
+proc check-zmq {} {
+    set found 0
+    if {[cc-check-function-in-lib zmq_init zmq]} {
+        define lib_zmq -lzmq
+        incr found
+    }
+    return $found
+}
+
+proc check-czmq {} {
+    set found 0
+    if {[cc-check-function-in-lib zctx_new czmq]} {
+        define lib_czmq -lczmq
         incr found
     }
     return $found

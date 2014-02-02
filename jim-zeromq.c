@@ -41,8 +41,6 @@
 
 #include <jim.h>
 
-#define SEND_BUFFER_SIZE 8192
-
 static zctx_t *ctx = NULL;
 
 static void

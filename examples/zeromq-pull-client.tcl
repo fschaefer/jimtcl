@@ -1,5 +1,5 @@
 
-# open subscriber socket
+# open pulling socket
 set socket [zeromq.open PULL tcp://localhost:5000]
 
 # encryption key

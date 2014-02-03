@@ -1,17 +1,17 @@
 
-#open publisher socket
+#open requesting socket
 set socket [zeromq.open REQ tcp://localhost:5000]
 
-set message HELO 
+set message HELO
 
 while {1} {
 
     # send HELO
     $socket send $message
-    
+
     puts "sending message $message"
 
-    # receive HELO
+    # and receive a new HELO
     set message "[$socket receive]"
 
     #exit if interrupted

@@ -1,5 +1,5 @@
 
-#open publisher socket
+#open pushing socket
 set socket [zeromq.open -bind PUSH tcp://*:5000]
 
 # encryption key

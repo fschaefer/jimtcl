@@ -1,0 +1,13 @@
+source [file dirname [info script]]/testing.tcl
+
+needs cmd z85
+
+test z85-1.1 "Z85 encode a string" {
+    z85 encode foob
+} {w]zP%}
+
+test z85-1.2 "Z85 decode a string" {
+    z85 decode w]zP%
+} {foob}
+
+testreport

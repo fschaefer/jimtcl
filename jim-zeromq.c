@@ -102,7 +102,6 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         Jim_SetResult(interp, Jim_NewIntObj(interp, zctx_interrupted));
 
         zctx_interrupted = 0;
-
     }
     else if (option == OPT_RECEIVE) {
         if (argc != 2) {
@@ -111,14 +110,13 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         }
 
         const char *message = NULL;
-
-        //if (zsocket_poll(socket, 200))
         message = zstr_recv(socket);
 
-        if (message)
+        if (message) {
             Jim_SetResultString(interp, message, -1);
-        else
+        } else {
             Jim_SetEmptyResult(interp);
+        }
     }
     return JIM_OK;
 }
@@ -126,8 +124,6 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 static int
 Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-
-	const char *arg_type = "PUSH";
 	int type = ZMQ_PUSH;
 	const char *subscribe = "";
 	const char *endpoint = NULL;
@@ -139,28 +135,24 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
     if (Jim_CompareStringImmediate(interp, argv[1], "-bind")) {
         bind = 1;
-        arg_type = Jim_String(argv[2]);
-    }
-    else {
-        arg_type = Jim_String(argv[1]);
     }
 
-    if (!strcasecmp(arg_type, "push")) {
+    if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PUSH")) {
         type = ZMQ_PUSH;
     }
-    else if (!strcasecmp(arg_type, "pull")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PULL")) {
         type = ZMQ_PULL;
     }
-    else if (!strcasecmp(arg_type, "req")) {
-        type = ZMQ_REQ;
-    }
-    else if (!strcasecmp(arg_type, "rep")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "REP")) {
         type = ZMQ_REP;
     }
-    else if (!strcasecmp(arg_type, "pub")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "REQ")) {
+        type = ZMQ_REQ;
+    }
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PUB")) {
         type = ZMQ_PUB;
     }
-    else if (!strcasecmp(arg_type, "sub")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "SUB")) {
         type = ZMQ_SUB;
     }
     else {
@@ -202,10 +194,12 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     return JIM_OK;
 
 wrong_args:
-    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type ?subscribe? endpoint");
+
+    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB ?subscribe? endpoint");
     return JIM_ERR;
 
 zmq_error:
+
     Jim_SetResultFormatted(interp, "error %d: %s\n", errno, zmq_strerror(errno));
     return JIM_ERR;
 }

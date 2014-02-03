@@ -230,9 +230,9 @@ thotp_hotp(struct thotp_blob *key,
 		return result;
 	}
 
-	*code = malloc(digits + 1);
+	*code = Jim_Alloc(digits + 1);
 	if (*code == NULL) {
-		free(*code);
+		Jim_Free(*code);
 		*code = NULL;
 		return ENOMEM;
 	}
@@ -240,7 +240,7 @@ thotp_hotp(struct thotp_blob *key,
 
 	result = thotp_truncate(hmac, hmac_size, digits, *code);
 	if (result != 0)  {
-		free(*code);
+		Jim_Free(*code);
 		*code = NULL;
 		return result;
 	}
@@ -265,13 +265,13 @@ thotp_base32_parse(const char *base32, struct thotp_blob **blob)
 	unsigned int counter, v;
 	const char *p, *q;
 
-	*blob = malloc(sizeof(**blob));
+	*blob = Jim_Alloc(sizeof(**blob));
 	if (*blob == NULL) {
 		return ENOMEM;
 	}
-	(*blob)->data = malloc((howmany(strlen(base32), 8) * 5) + 5 + 1);
+	(*blob)->data = Jim_Alloc((howmany(strlen(base32), 8) * 5) + 5 + 1);
 	if ((*blob)->data == NULL) {
-		free(*blob);
+		Jim_Free(*blob);
 		*blob = NULL;
 		return ENOMEM;
 	}
@@ -350,7 +350,7 @@ thotp_base32_unparse(struct thotp_blob *blob, char **base32)
 	unsigned int i, j;
 	unsigned char v[8];
 
-	*base32 = malloc((howmany(blob->length, 5) * 8) + 1);
+	*base32 = Jim_Alloc((howmany(blob->length, 5) * 8) + 1);
 	if (*base32 == NULL) {
 		return ENOMEM;
 	}
@@ -405,25 +405,29 @@ thotp_base32_unparse(struct thotp_blob *blob, char **base32)
 static int
 Hotp_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
+    struct thotp_blob *key = NULL;
+	char *code = NULL, *p;
+	unsigned long long counter;
+
+    int rc = JIM_OK;
 
     if (argc != 3) {
         Jim_WrongNumArgs(interp, 1, argv, "key counter");
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
-
-    struct thotp_blob *key;
-	char *code, *p;
-	unsigned long long counter;
 
 	if (thotp_base32_parse(Jim_String(argv[1]), &key) != 0) {
         Jim_SetResultString(interp, "Failed to parse key", -1);
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
 
     counter = strtoull(Jim_String(argv[2]), &p, 10);
 	if ((p == NULL) || (*p != '\0')) {
         Jim_SetResultString(interp, "Failed to parse counter", -1);
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
 
     if (thotp_hotp(key, thotp_alg_sha1, (uint64_t) counter, 6, &code) != 0) {
@@ -432,33 +436,59 @@ Hotp_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     }
 
     Jim_SetResultString(interp, code, -1);
-    return JIM_OK;
+
+free:
+
+    if (key && key->data) {
+        Jim_Free(key->data);
+        Jim_Free(key);
+    }
+
+    if (code)
+        Jim_Free(code);
+
+    return rc;
 }
 
 static int
 Totp_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
+	struct thotp_blob *key = NULL;
+	char *code = NULL;
+
+    int rc = JIM_OK;
 
     if (argc != 2) {
         Jim_WrongNumArgs(interp, 1, argv, "key");
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
-
-	struct thotp_blob *key;
-	char *code;
 
 	if (thotp_base32_parse(Jim_String(argv[1]), &key) != 0) {
         Jim_SetResultString(interp, "Failed to parse key", -1);
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
 
 	if (thotp_totp(key, thotp_alg_sha1, 30, time(NULL), 6, &code) != 0) {
         Jim_SetResultString(interp, "Failed to calculate TOTP", -1);
-        return JIM_ERR;
+        rc = JIM_ERR;
+        goto free;
     }
 
     Jim_SetResultString(interp, code, -1);
-    return JIM_OK;
+
+free:
+
+    if (key && key->data) {
+        Jim_Free(key->data);
+        Jim_Free(key);
+    }
+
+    if (code)
+        Jim_Free(code);
+
+    return rc;
 }
 
 int

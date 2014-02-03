@@ -1,0 +1,13 @@
+source [file dirname [info script]]/testing.tcl
+
+needs cmd hex
+
+test hex-1.1 "HEX encode a string" {
+    hex encode foobar
+} {666F6F626172}
+
+test hex-1.2 "HEX decode a string" {
+    hex decode 666F6F626172
+} {foobar}
+
+testreport

@@ -185,9 +185,25 @@ win32.so: jim-win32.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-win32.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-win32.o $(SH_LIBJIM) @LDLIBS_win32@
 
+mk.so: jim-mk.cpp
+	$(CXX) $(CXXFLAGS) $(SHOBJ_CFLAGS) -c -o jim-mk.o $> $^
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-mk.o $(SH_LIBJIM) @LDLIBS_mk@
+
+sdl.so: jim-sdl.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-sdl.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-sdl.o $(SH_LIBJIM) @LDLIBS_sdl@
+
+aes.so: jim-aes.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-aes.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-aes.o $(SH_LIBJIM) @LDLIBS_aes@
+
 base64.so: jim-base64.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-base64.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-base64.o $(SH_LIBJIM) @LDLIBS_base64@
+
+hex.so: jim-hex.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-hex.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-hex.o $(SH_LIBJIM) @LDLIBS_hex@
 
 md5.so: jim-md5.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-md5.o $> $^
@@ -197,17 +213,13 @@ thotp.so: jim-thotp.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-thotp.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-thotp.o $(SH_LIBJIM) @LDLIBS_thotp@
 
+z85.so: jim-z85.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-z85.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-z85.o $(SH_LIBJIM) @LDLIBS_z85@
+
 zeromq.so: jim-zeromq.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-zeromq.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-zeromq.o $(SH_LIBJIM) @LDLIBS_zeromq@
-
-mk.so: jim-mk.cpp
-	$(CXX) $(CXXFLAGS) $(SHOBJ_CFLAGS) -c -o jim-mk.o $> $^
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-mk.o $(SH_LIBJIM) @LDLIBS_mk@
-
-sdl.so: jim-sdl.c
-	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-sdl.o $> $^
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-sdl.o $(SH_LIBJIM) @LDLIBS_sdl@
 
 Tcl.html: jim_tcl.txt
 	@tclsh@ @srcdir@/make-index $> $^ | asciidoc -o $@ -d manpage - || cp @srcdir@/Tcl_shipped.html Tcl.html

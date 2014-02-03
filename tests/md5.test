@@ -1,8 +1,10 @@
 source [file dirname [info script]]/testing.tcl
 
+needs cmd md5
+
 test md5-1.1 "Compare generated md5" {
     md5 foobar
-} {3858f62230ac3c915f300c664312c63f}
+} {3858F62230AC3C915F300C664312C63F}
 
 test md5-1.2 "Compare tow generated md5s" {
     set result $([md5 foobar] eq [md5 foobar])

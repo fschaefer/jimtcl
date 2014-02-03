@@ -1,0 +1,14 @@
+source [file dirname [info script]]/testing.tcl
+
+needs cmd hotp
+needs cmd totp
+
+test thotp-1.1 "HMAC-based One-time Password (HOTP)" {
+    expr { [hotp secret 1] eq [hotp secret 1] }
+} {1}
+
+test thotp-1.2 "Time-based One-time Password (TOTP) (TEST MAY FAIL!)" {
+    expr { [totp secret] eq [totp secret] }
+} {1}
+
+testreport

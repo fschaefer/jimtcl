@@ -36,6 +36,8 @@
 #include <openssl/md5.h>
 #include <jim.h>
 
+extern char* hex_encode(const char *bin, int len);
+
 static int
 MD5_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
@@ -55,12 +57,12 @@ MD5_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     unsigned char digest[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     MD5_Final(digest, &ctx);
 
-    char md5[33];
-    int i;
-    for (i = 0; i < 16; ++i)
-        sprintf(&md5[i*2], "%02x", (unsigned int)digest[i]);
+    char *md5 = (char *)hex_encode((char*)&digest, (int)16);
 
     Jim_SetResultString(interp, md5, -1);
+
+    Jim_Free(md5);
+
     return JIM_OK;
 }
 

@@ -73,7 +73,7 @@ base64_encode(const void *data, size_t size)
     if (data == NULL) return NULL;
     if (size == 0) return NULL;
 
-    p = s = calloc(size * 4 / 3 + 4, sizeof(char));
+    p = s = Jim_Alloc(size * 4 / 3 + 4);
 
     if (p == NULL)
         return NULL;
@@ -109,7 +109,7 @@ base64_encode(const void *data, size_t size)
         p += 4;
     }
 
-    *p = 0;
+    *p = '\0';
 
     return s;
 }
@@ -153,7 +153,7 @@ base64_decode(const char *str)
 
     if (str == NULL) return NULL;
 
-    q = data = calloc(strlen(str) / 4 * 3, sizeof(char));
+    q = data = Jim_Alloc(strlen(str) / 4 * 3 + 1);
 
     for (p = str; *p && (*p == '=' || strchr(base64_alphabet, *p)); p += 4) {
         unsigned int val = base64_decode_token(p);
@@ -171,6 +171,8 @@ base64_decode(const char *str)
             *q++ = val & 0xff;
     }
 
+    *q++ = '\0';
+
     return data;
 }
 
@@ -187,6 +189,9 @@ static int base64_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     }
 
     Jim_SetResultString(interp, b64, -1);
+
+    Jim_Free(b64);
+
     return JIM_OK;
 }
 
@@ -200,26 +205,32 @@ static int base64_cmd_decode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     }
 
     Jim_SetResultString(interp, data, -1);
+
+    Jim_Free(data);
+
     return JIM_OK;
 }
 
 static const jim_subcmd_type array_command_table[] = {
-        {       "encode",
-                "data",
-                base64_cmd_encode,
-                1,
-                1,
-                /* Description: base64 encode */
-        },
-        {       "decode",
-                "base64String",
-                base64_cmd_decode,
-                1,
-                1,
-                /* Description: base64 decode */
-        },
-        {       NULL
-        }
+    {
+        "encode",
+        "data",
+        base64_cmd_encode,
+        1,
+        1,
+        /* Description: base64 encode */
+    },
+    {
+        "decode",
+        "base64String",
+        base64_cmd_decode,
+        1,
+        1,
+        /* Description: base64 decode */
+    },
+    {
+        NULL
+    }
 };
 
 int

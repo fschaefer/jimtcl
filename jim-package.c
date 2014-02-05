@@ -157,13 +157,21 @@ int Jim_PackageRequire(Jim_Interp *interp, const char *name, int flags)
  *      The package must not already be provided in the interpreter.
  *
  * Results:
- *      Returns JIM_OK and sets results as "1.0" (the given version is ignored)
+ *      Returns JIM_OK and sets the results to the version (defaults to "1.0")
  *
  *----------------------------------------------------------------------
  */
 static int package_cmd_provide(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-    return Jim_PackageProvide(interp, Jim_String(argv[0]), package_version_1, JIM_ERRMSG);
+    const char* name = Jim_String(argv[0]);
+    const char* ver = package_version_1;
+
+    if (argc > 1) {
+        Jim_IncrRefCount(argv[1]);
+        ver = Jim_String(argv[1]);
+    }
+
+    return Jim_PackageProvide(interp, name, ver, JIM_ERRMSG);
 }
 
 /*

@@ -55,8 +55,6 @@ typedef enum AlgoType {
     AES_NONE
 } AlgoType;
 
-#define EN_BLK_SIZ 4096
-
 int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
 	     EVP_CIPHER_CTX *ctx, AES_Mode mode, AlgoType algo)
 {
@@ -129,8 +127,6 @@ int aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *o
 	*olenp = olen + flen;
 	return 0;
 }
-
-#define EN_BLK_SIZ 4096
 
 static int
 aes_cmd_encrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)

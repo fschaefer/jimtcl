@@ -104,13 +104,26 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         zctx_interrupted = 0;
     }
     else if (option == OPT_RECEIVE) {
-        if (argc != 2) {
-            Jim_WrongNumArgs(interp, 2, argv, "");
+
+        int nowait = 0;
+        const char *message = NULL;
+
+        if ((argc == 3 && !Jim_CompareStringImmediate(interp, argv[2], "-nowait")) || argc > 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "?-nowait?");
             return JIM_ERR;
         }
 
-        const char *message = NULL;
-        message = zstr_recv(socket);
+        if (argc == 3) {
+            nowait = 1;
+        }
+
+        if (nowait) {
+            if (zsocket_poll(socket, 50)) {
+                message = zstr_recv_nowait(socket);
+            }
+        } else {
+            message = zstr_recv(socket);
+        }
 
         if (message) {
             Jim_SetResultString(interp, message, -1);
@@ -155,6 +168,15 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "SUB")) {
         type = ZMQ_SUB;
     }
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "DEALER")) {
+        type = ZMQ_DEALER;
+    }
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "ROUTER")) {
+        type = ZMQ_ROUTER;
+    }
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PAIR")) {
+        type = ZMQ_PAIR;
+    }
     else {
         goto wrong_args;
     }
@@ -195,7 +217,7 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB ?subscribe? endpoint");
+    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|DEALER|ROUTER|PAIR ?subscribe? endpoint");
     return JIM_ERR;
 
 zmq_error:

@@ -91,7 +91,7 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         }
 
         const char *message = Jim_String(argv[2]);
-	    zstr_send(socket, message);
+        zstr_send(socket, message);
     }
     else if (option == OPT_INTERRUPTED) {
         if (argc != 2) {
@@ -177,6 +177,9 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PAIR")) {
         type = ZMQ_PAIR;
     }
+    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "STREAM")) {
+        type = ZMQ_STREAM;
+    }
     else {
         goto wrong_args;
     }
@@ -217,7 +220,7 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|DEALER|ROUTER|PAIR ?subscribe? endpoint");
+    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|DEALER|ROUTER|PAIR|STREAM ?subscribe? endpoint");
     return JIM_ERR;
 
 zmq_error:

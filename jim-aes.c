@@ -107,7 +107,6 @@ int aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *o
 	int olen = *olenp;
 	int flen = 0;
 
-	EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
 	EVP_EncryptUpdate(e, out, &olen, in, ilen);
 	EVP_EncryptFinal_ex(e, out + olen, &flen);
 
@@ -120,7 +119,6 @@ int aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *o
 	int olen = *olenp;
 	int flen = 0;
 
-	EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
 	EVP_DecryptUpdate(e, out, &olen, in, ilen);
 	EVP_DecryptFinal_ex(e, out + olen, &flen);
 

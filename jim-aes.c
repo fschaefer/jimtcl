@@ -50,30 +50,49 @@ typedef enum AES_Mode {
 } AES_Mode;
 
 typedef enum AlgoType {
-    AES_ECB_128,
-    AES_CBC_256,
+    AES_128_ECB,
+    AES_192_ECB,
+    AES_256_ECB,
+    AES_128_CBC,
+    AES_192_CBC,
+    AES_256_CBC,
     AES_NONE
 } AlgoType;
 
 int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
 	     EVP_CIPHER_CTX *ctx, AES_Mode mode, AlgoType algo)
 {
-	int count, ret, def_key_len;
-	unsigned char key16[16], iv16[16];
-	unsigned char key32[32], iv32[32];
-	unsigned char *key, *iv;
+	int rounds, ret, def_key_len;
+	unsigned char key[EVP_MAX_KEY_LENGTH], iv[EVP_MAX_IV_LENGTH];
 	const EVP_CIPHER *type;
 
 	switch (algo) {
-	case AES_ECB_128:
-		key = key16;
-		iv = iv16;
+	case AES_128_ECB:
+	    rounds = 1;
 		def_key_len = 16;
 		type = EVP_aes_128_ecb();
 		break;
-	case AES_CBC_256:
-		key = key32;
-		iv = iv32;
+	case AES_192_ECB:
+	    rounds = 1;
+		def_key_len = 24;
+		type = EVP_aes_192_ecb();
+		break;
+	case AES_256_ECB:
+	    rounds = 1;
+		def_key_len = 32;
+		type = EVP_aes_256_ecb();
+	case AES_128_CBC:
+	    rounds = 1;
+		def_key_len = 16;
+		type = EVP_aes_128_cbc();
+		break;
+	case AES_192_CBC:
+	    rounds = 1;
+		def_key_len = 24;
+		type = EVP_aes_192_cbc();
+		break;
+	case AES_256_CBC:
+	    rounds = 1;
 		def_key_len = 32;
 		type = EVP_aes_256_cbc();
 		break;
@@ -81,8 +100,7 @@ int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
 		return -1;
 	}
 
-	count = 5;
-	ret = EVP_BytesToKey(type, EVP_sha1(), salt, (unsigned char*)key_data, key_data_len, count, key, iv);
+	ret = EVP_BytesToKey(type, EVP_md5(), salt, (unsigned char*)key_data, key_data_len, rounds, key, iv);
 	if (ret != def_key_len) {
 		return -1;
 	}
@@ -133,14 +151,26 @@ aes_cmd_encrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         goto wrong_args;
     }
 
-    AlgoType type = AES_CBC_256;
+    AlgoType type = AES_256_CBC;
 
     if (argc == 4) {
-        if (Jim_CompareStringImmediate(interp, argv[1], "AES_ECB_128")) {
-            type = AES_ECB_128;
+        if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {
+            type = AES_128_ECB;
         }
-        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_CBC_256")) {
-            type = AES_CBC_256;
+        if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
+            type = AES_192_ECB;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_ECB")) {
+            type = AES_256_ECB;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_CBC")) {
+            type = AES_128_CBC;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_CBC")) {
+            type = AES_192_CBC;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_CBC")) {
+            type = AES_256_CBC;
         }
         else {
             goto wrong_args;
@@ -186,7 +216,7 @@ encrypt_error:
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 0, argv, "?-type AES_ECB_128|AES_CBC_256? key plaintext");
+    Jim_WrongNumArgs(interp, 0, argv, "?-type AES_128_ECB|AES_192_ECB|AES_256_ECB|AES_128_CBC|AES_192_CBC|AES_256_CBC? key plaintext");
     return JIM_ERR;
 }
 
@@ -197,14 +227,26 @@ aes_cmd_decrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         goto wrong_args;
     }
 
-    AlgoType type = AES_CBC_256;
+    AlgoType type = AES_256_CBC;
 
     if (argc == 4) {
-        if (Jim_CompareStringImmediate(interp, argv[1], "AES_ECB_128")) {
-            type = AES_ECB_128;
+        if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {
+            type = AES_128_ECB;
         }
-        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_CBC_256")) {
-            type = AES_CBC_256;
+        if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
+            type = AES_192_ECB;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_ECB")) {
+            type = AES_256_ECB;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_CBC")) {
+            type = AES_128_CBC;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_CBC")) {
+            type = AES_192_CBC;
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_CBC")) {
+            type = AES_256_CBC;
         }
         else {
             goto wrong_args;
@@ -253,14 +295,14 @@ decrypt_error:
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 0, argv, "?-type AES_ECB_128|AES_CBC_256? key plaintext");
+    Jim_WrongNumArgs(interp, 0, argv, "?-type AES_128_ECB|AES_192_ECB|AES_256_ECB|AES_128_CBC|AES_192_CBC|AES_256_CBC? key ciphertext");
     return JIM_ERR;
 }
 
 static const jim_subcmd_type array_command_table[] = {
     {
         "encrypt",
-        "?-type AES_ECB_128|AES_CBC_256? key plaintext",
+        "?-type AES_128_ECB|AES_192_ECB|AES_256_ECB|AES_128_CBC|AES_192_CBC|AES_256_CBC? key plaintext",
         aes_cmd_encrypt,
         2,
         4,
@@ -268,7 +310,7 @@ static const jim_subcmd_type array_command_table[] = {
     },
     {
         "decrypt",
-        "?-type AES_ECB_128|AES_CBC_256? key ciphertext",
+        "?-type AES_128_ECB|AES_192_ECB|AES_256_ECB|AES_128_CBC|AES_192_CBC|AES_256_CBC? key ciphertext",
         aes_cmd_decrypt,
         2,
         4,

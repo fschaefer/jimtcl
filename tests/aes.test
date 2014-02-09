@@ -4,18 +4,18 @@ needs cmd aes
 
 test aes-1.1 "AES encrypt a string with AES_CBC_256" {
     aes encrypt {a key} {a text}
-} {4899C9FD5B4A97B2B67A195B8E4D9AB4}
+} {63A5112A4A2FAC549FB59BA9472EE156}
 
 test aes-1.2 "AES decrypt a string with AES_CBC_256" {
-    aes decrypt -type AES_CBC_256 {a key} 4899C9FD5B4A97B2B67A195B8E4D9AB4
+    aes decrypt -type AES_256_CBC {a key} 63A5112A4A2FAC549FB59BA9472EE156
 } {a text}
 
 test aes-1.3 "AES encrypt a string with AES_ECB_128" {
-    aes encrypt -type AES_ECB_128 {a key} {a text}
-} {DA4E3E58599873C8BB57AF436EDBF5DB}
+    aes encrypt -type AES_128_ECB {a key} {a text}
+} {B2C2CB05F64D980E53EF91927817BFA3}
 
 test aes-1.3 "AES decrypt a string with AES_ECB_128" {
-    aes decrypt -type AES_ECB_128 {a key} DA4E3E58599873C8BB57AF436EDBF5DB
+    aes decrypt -type AES_128_ECB {a key} B2C2CB05F64D980E53EF91927817BFA3
 } {a text}
 
 testreport

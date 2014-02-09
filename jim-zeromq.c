@@ -169,12 +169,6 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "SUB")) {
         type = ZMQ_SUB;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "DEALER")) {
-        type = ZMQ_DEALER;
-    }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "ROUTER")) {
-        type = ZMQ_ROUTER;
-    }
     else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PAIR")) {
         type = ZMQ_PAIR;
     }
@@ -221,7 +215,7 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|DEALER|ROUTER|PAIR|STREAM ?subscribe? endpoint");
+    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|PAIR|STREAM ?subscribe? endpoint");
     return JIM_ERR;
 
 zmq_error:

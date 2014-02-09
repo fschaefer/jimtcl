@@ -1,4 +1,5 @@
 # Common code
+set auto_path [lsearch -exact -inline -not $auto_path [pwd]]
 set testinfo(verbose) 0
 set testinfo(numpass) 0
 set testinfo(stoponerror) 0

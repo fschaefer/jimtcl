@@ -127,6 +127,7 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
         if (message) {
             Jim_SetResultString(interp, message, -1);
+            free((void*)message);
         } else {
             Jim_SetEmptyResult(interp);
         }

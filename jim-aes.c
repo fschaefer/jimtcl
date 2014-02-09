@@ -157,7 +157,7 @@ aes_cmd_encrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {
             type = AES_128_ECB;
         }
-        if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
             type = AES_192_ECB;
         }
         else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_ECB")) {
@@ -233,7 +233,7 @@ aes_cmd_decrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {
             type = AES_128_ECB;
         }
-        if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
+        else if (Jim_CompareStringImmediate(interp, argv[1], "AES_192_ECB")) {
             type = AES_192_ECB;
         }
         else if (Jim_CompareStringImmediate(interp, argv[1], "AES_256_ECB")) {

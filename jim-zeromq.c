@@ -42,12 +42,21 @@
 #include <jim.h>
 
 static zctx_t *ctx = NULL;
+static int ctx_refc = 0;
 
 static void
 JimZeromqDelContextProc(Jim_Interp *interp, void *privData)
 {
     JIM_NOTUSED(interp);
-	zctx_destroy(&ctx);
+
+    if (ctx) {
+        ctx_refc--;
+
+        if (ctx_refc == 0) {
+            zctx_destroy(&ctx);
+            ctx = NULL;
+        }
+    }
 }
 
 static void
@@ -55,7 +64,7 @@ JimZeromqDelSocketProc(Jim_Interp *interp, void *privData)
 {
     void *socket = privData;
     JIM_NOTUSED(interp);
-	zsocket_destroy(ctx, socket);
+    zsocket_destroy(ctx, socket);
 }
 
 static int
@@ -138,10 +147,10 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 static int
 Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-	int type = ZMQ_PUSH;
-	const char *subscribe = "";
-	const char *endpoint = NULL;
-	int bind = 0;
+    int type = ZMQ_PUSH;
+    const char *subscribe = "";
+    const char *endpoint = NULL;
+    int bind = 0;
 
     if (argc < 2 || (argc == 2 && Jim_CompareStringImmediate(interp, argv[1], "-bind"))) {
         goto wrong_args;
@@ -185,25 +194,28 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
     endpoint = Jim_String(argv[argc-1]);
 
-    if (ctx == NULL)
+    if (ctx == NULL) {
         ctx = zctx_new();
-
-	if (ctx == NULL) {
-	    goto zmq_error;
-	}
-
-	void *socket = zsocket_new(ctx, type);
-	if (socket == NULL) {
-	    goto zmq_error;
     }
 
-	if (type == ZMQ_SUB)
+    if (ctx == NULL) {
+        goto zmq_error;
+    }
+
+    ctx_refc++;
+
+    void *socket = zsocket_new(ctx, type);
+    if (socket == NULL) {
+        goto zmq_error;
+    }
+
+    if (type == ZMQ_SUB)
         zsocket_set_subscribe(socket, subscribe);
 
-	if (bind) {
-		zsocket_bind(socket, endpoint);
-	} else {
-	    zsocket_connect(socket, endpoint);
+    if (bind) {
+        zsocket_bind(socket, endpoint);
+    } else {
+        zsocket_connect(socket, endpoint);
     }
 
     char buf[60];

@@ -1,6 +1,7 @@
 
 # open pulling socket
-set socket [zeromq.open PULL tcp://localhost:5000]
+set socket [zeromq.new PULL]
+$socket connect tcp://localhost:5000
 
 # encryption key
 set key testkey

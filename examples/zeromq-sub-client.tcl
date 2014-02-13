@@ -1,6 +1,8 @@
 
 # open subscriber socket
-set socket [zeromq.open SUB tcp://localhost:5000]
+set socket [zeromq.new SUB]
+$socket connect tcp://localhost:5000
+$socket sockopt SUBSCRIBE ""
 
 # encryption key
 set key testkey

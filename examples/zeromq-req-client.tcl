@@ -1,6 +1,7 @@
 
 #open requesting socket
-set socket [zeromq.open REQ tcp://localhost:5000]
+set socket [zeromq.new REQ]
+$socket connect tcp://localhost:5000
 
 set message HELO
 

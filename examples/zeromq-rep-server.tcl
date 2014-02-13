@@ -1,6 +1,7 @@
 
 # open replying socket
-set socket [zeromq.open -bind REP tcp://*:5000]
+set socket [zeromq.new REP]
+$socket bind tcp://*:5000
 
 set i 0
 

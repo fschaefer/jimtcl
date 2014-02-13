@@ -62,65 +62,238 @@ JimZeromqDelContextProc(Jim_Interp *interp, void *privData)
 static void
 JimZeromqDelSocketProc(Jim_Interp *interp, void *privData)
 {
-    void *socket = privData;
     JIM_NOTUSED(interp);
+
+    void *socket = privData;
     zsocket_destroy(ctx, socket);
 }
+
+static const char * const options[] = {
+    "bind", "close", "connect", "disconnect", "interrupted", "sockopt", "receive", "send", NULL
+};
+enum {
+    OPT_BIND, OPT_CLOSE, OPT_CONNECT, OPT_DISCONNECT, OPT_INTERRUPTED, OPT_SOCKOPT, OPT_RECEIVE, OPT_SEND
+};
 
 static int
 JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     void *socket = Jim_CmdPrivData(interp);
 
+    int rc = 0;
     int option;
-    static const char * const options[] = {
-        "close", "send", "interrupted", "receive", NULL
-    };
-    enum
-    { OPT_CLOSE, OPT_SEND, OPT_INTERRUPTED, OPT_RECEIVE };
 
     if (argc < 2) {
         Jim_WrongNumArgs(interp, 1, argv, "method ?args ...?");
         return JIM_ERR;
     }
+
     if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq method", JIM_ERRMSG) != JIM_OK)
         return JIM_ERR;
-    /* CLOSE */
-    if (option == OPT_CLOSE) {
+
+    if (option == OPT_BIND || option == OPT_CONNECT) {
+
+        if (argc != 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "endpoint");
+            return JIM_ERR;
+        }
+
+        const char *endpoint;
+        endpoint = Jim_String(argv[2]);
+
+        if (option == OPT_CONNECT) {
+            rc = zsocket_connect(socket, endpoint);
+
+            if (rc != 0) {
+                Jim_SetResultString(interp, "Failed to connect to socket", -1);
+                return JIM_ERR;
+            }
+        }
+        else {
+            rc = zsocket_bind(socket, endpoint);
+
+            if (rc == -1) {
+                Jim_SetResultString(interp, "Failed to bind socket", -1);
+                return JIM_ERR;
+            }
+
+            Jim_SetResultInt(interp, rc);
+        }
+
+    }
+    else if (option == OPT_CLOSE) {
+
         if (argc != 2) {
             Jim_WrongNumArgs(interp, 2, argv, "");
             return JIM_ERR;
         }
+
         Jim_DeleteCommand(interp, Jim_String(argv[0]));
+
     }
-    else if (option == OPT_SEND) {
+    else if (option == OPT_DISCONNECT) {
+
         if (argc != 3) {
-            Jim_WrongNumArgs(interp, 2, argv, "message");
+            Jim_WrongNumArgs(interp, 2, argv, "endpoint");
             return JIM_ERR;
         }
 
-        const char *message = Jim_String(argv[2]);
-        zstr_send(socket, message);
+        const char *endpoint;
+        endpoint = Jim_String(argv[2]);
+
+        rc = zsocket_disconnect(socket, endpoint);
+
+        if (rc != 0) {
+            Jim_SetResultString(interp, "Failed to diconnect from socket", -1);
+            return JIM_ERR;
+        }
+
     }
     else if (option == OPT_INTERRUPTED) {
+
         if (argc != 2) {
             Jim_WrongNumArgs(interp, 2, argv, "");
             return JIM_ERR;
         }
 
         Jim_SetResult(interp, Jim_NewIntObj(interp, zctx_interrupted));
-
         zctx_interrupted = 0;
+
+    }
+    else if (option == OPT_SOCKOPT) {
+
+        if (argc < 3 || argc > 4) {
+            Jim_WrongNumArgs(interp, 2, argv, "option ?value?");
+            return JIM_ERR;
+        }
+
+        if (Jim_CompareStringImmediate(interp, argv[2], "BACKLOG")) {
+
+            if (argc == 4) {
+
+                long backlog;
+
+                if (Jim_GetLong(interp, argv[3], &backlog) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_backlog(socket, (int)backlog);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_backlog(socket)));
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "IDENTITY")) {
+
+            const char* identity = "";
+
+            if (argc == 4) {
+                if (zsocket_type(socket) == ZMQ_REQ
+                &&  zsocket_type(socket) == ZMQ_REP
+                &&  zsocket_type(socket) == ZMQ_DEALER
+                &&  zsocket_type(socket) == ZMQ_ROUTER) {
+                    identity = Jim_String(argv[3]);
+                    zsocket_set_identity(socket, identity);
+                }
+            }
+            else {
+                identity = zsocket_identity(socket);
+                Jim_SetResultString(interp, identity, -1);
+                free((void*)identity);
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "LINGER")) {
+
+            if (argc == 4) {
+
+                long linger;
+
+                if (Jim_GetLong(interp, argv[3], &linger) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_linger(socket, (int)linger);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_linger(socket)));
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "RCVHWM")) {
+
+            if (argc == 4) {
+
+                long rcvhwm;
+
+                if (Jim_GetLong(interp, argv[3], &rcvhwm) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_rcvhwm(socket, (int)rcvhwm);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_rcvhwm(socket)));
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "SNDHWM")) {
+
+            if (argc == 4) {
+
+                long sndhwm;
+
+                if (Jim_GetLong(interp, argv[3], &sndhwm) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_sndhwm(socket, (int)sndhwm);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_sndhwm(socket)));
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "SUBSCRIBE")) {
+
+            const char* subscribe = "";
+
+            if (argc == 4) {
+                subscribe = Jim_String(argv[3]);
+                zsocket_set_subscribe(socket, subscribe);
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "UNSUBSCRIBE")) {
+
+            const char* unsubscribe = "";
+
+            if (argc == 4) {
+                unsubscribe = Jim_String(argv[3]);
+                zsocket_set_unsubscribe(socket, unsubscribe);
+            }
+
+        }
+        else {
+            Jim_WrongNumArgs(interp, 2, argv, "option=BACKLOCK|IDENTITY|LINGER|RCVHWM|SNDHWM|SUBSCRIBE|UNSUBSCRIBE ?value?");
+            return JIM_ERR;
+        }
+
     }
     else if (option == OPT_RECEIVE) {
-
-        int nowait = 0;
-        const char *message = NULL;
 
         if ((argc == 3 && !Jim_CompareStringImmediate(interp, argv[2], "-nowait")) || argc > 3) {
             Jim_WrongNumArgs(interp, 2, argv, "?-nowait?");
             return JIM_ERR;
         }
+
+        int nowait = 0;
+        const char *message = NULL;
 
         if (argc == 3) {
             nowait = 1;
@@ -130,69 +303,77 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
             if (zsocket_poll(socket, 50)) {
                 message = zstr_recv_nowait(socket);
             }
-        } else {
+        }
+        else {
             message = zstr_recv(socket);
         }
 
         if (message) {
             Jim_SetResultString(interp, message, -1);
             free((void*)message);
-        } else {
+        }
+        else {
             Jim_SetEmptyResult(interp);
         }
+
     }
+    else if (option == OPT_SEND) {
+
+        if (argc != 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "message");
+            return JIM_ERR;
+        }
+
+        const char *message;
+        message = Jim_String(argv[2]);
+        rc = zstr_send(socket, message);
+
+        if (rc != 0) {
+            Jim_SetResultString(interp, "Failed to send message", -1);
+            return JIM_ERR;
+        }
+
+    }
+
     return JIM_OK;
 }
 
 static int
 Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-    int type = ZMQ_PUSH;
-    const char *subscribe = "";
-    const char *endpoint = NULL;
-    int bind = 0;
-
-    if (argc < 2 || (argc == 2 && Jim_CompareStringImmediate(interp, argv[1], "-bind"))) {
+    if (argc != 2) {
         goto wrong_args;
     }
 
-    if (Jim_CompareStringImmediate(interp, argv[1], "-bind")) {
-        bind = 1;
-    }
+    int type = ZMQ_PUSH;
 
-    if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PUSH")) {
+    if (Jim_CompareStringImmediate(interp, argv[1], "PUSH")) {
         type = ZMQ_PUSH;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PULL")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "PULL")) {
         type = ZMQ_PULL;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "REP")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "REP")) {
         type = ZMQ_REP;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "REQ")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "REQ")) {
         type = ZMQ_REQ;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PUB")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "PUB")) {
         type = ZMQ_PUB;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "SUB")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "SUB")) {
         type = ZMQ_SUB;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "PAIR")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "PAIR")) {
         type = ZMQ_PAIR;
     }
-    else if (Jim_CompareStringImmediate(interp, argv[1 + bind], "STREAM")) {
+    else if (Jim_CompareStringImmediate(interp, argv[1], "STREAM")) {
         type = ZMQ_STREAM;
     }
     else {
         goto wrong_args;
     }
-
-    if (type == ZMQ_SUB && argc == 4) {
-        subscribe = Jim_String(argv[argc-2]);
-    }
-
-    endpoint = Jim_String(argv[argc-1]);
 
     if (ctx == NULL) {
         ctx = zctx_new();
@@ -209,28 +390,21 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         goto zmq_error;
     }
 
-    if (type == ZMQ_SUB)
-        zsocket_set_subscribe(socket, subscribe);
+    char buffer[60];
+    snprintf(buffer, sizeof(buffer), "zeromq.socket%ld", Jim_GetId(interp));
+    Jim_CreateCommand(interp, buffer, JimZeromqHandlerCommand, socket, JimZeromqDelSocketProc);
 
-    if (bind) {
-        zsocket_bind(socket, endpoint);
-    } else {
-        zsocket_connect(socket, endpoint);
-    }
-
-    char buf[60];
-    snprintf(buf, sizeof(buf), "zeromq.socket%ld", Jim_GetId(interp));
-    Jim_CreateCommand(interp, buf, JimZeromqHandlerCommand, socket, JimZeromqDelSocketProc);
-
-    Jim_SetResult(interp, Jim_MakeGlobalNamespaceName(interp, Jim_NewStringObj(interp, buf, -1)));
+    Jim_SetResult(interp, Jim_MakeGlobalNamespaceName(interp, Jim_NewStringObj(interp, buffer, -1)));
     return JIM_OK;
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 1, argv, "?-bind? type=PUSH|PULL|REP|REQ|PUB|SUB|PAIR|STREAM ?subscribe? endpoint");
+    Jim_WrongNumArgs(interp, 1, argv, "type=PUSH|PULL|REP|REQ|PUB|SUB|PAIR|STREAM");
     return JIM_ERR;
 
 zmq_error:
+
+    JimZeromqDelContextProc(interp, (void*)ctx);
 
     Jim_SetResultFormatted(interp, "error %d: %s\n", errno, zmq_strerror(errno));
     return JIM_ERR;
@@ -242,6 +416,6 @@ Jim_zeromqInit(Jim_Interp *interp)
     if (Jim_PackageProvide(interp, "zeromq", "0.1", JIM_ERRMSG))
         return JIM_ERR;
 
-    Jim_CreateCommand(interp, "zeromq.open", Zeromq_Cmd, NULL, JimZeromqDelContextProc);
+    Jim_CreateCommand(interp, "zeromq.new", Zeromq_Cmd, NULL, JimZeromqDelContextProc);
     return JIM_OK;
 }

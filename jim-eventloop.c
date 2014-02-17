@@ -53,16 +53,21 @@
 #include <winsock.h>
 #define msleep Sleep
 #else
-#ifdef HAVE_SYS_SELECT_H
+#ifdef HAVE_SELECT
 #include <sys/select.h>
-#endif
-
+#define msleep(MS) do { \
+    struct timeval t; \
+    t.tv_sec = (long)MS * 1000 / 1000000; \
+    t.tv_usec = (long)MS * 1000 % 1000000; \
+    select(0, NULL, NULL, NULL, &t); \
+} while(0)
+#else
 #ifndef HAVE_USLEEP
-/* XXX: Implement this in terms of select() or nanosleep() */
 #define msleep(MS) sleep((MS) / 1000)
 #warning "sub-second sleep not supported"
 #else
 #define msleep(MS) sleep((MS) / 1000); usleep(((MS) % 1000) * 1000);
+#endif
 #endif
 #endif
 

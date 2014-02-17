@@ -444,10 +444,18 @@ static int Jim_SleepCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
         ret = Jim_GetDouble(interp, argv[1], &t);
         if (ret == JIM_OK) {
+
+#ifdef HAVE_SELECT
+            struct timeval s;
+            s.tv_sec = (long)t;
+            s.tv_usec = (long)((t - (int)t) * 1e6);
+            select(0, NULL, NULL, NULL, &s);
+#else
 #ifdef HAVE_USLEEP
             usleep((int)((t - (int)t) * 1e6));
 #endif
             sleep(t);
+#endif
         }
     }
 

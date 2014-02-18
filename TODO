@@ -13,6 +13,8 @@ OTHER COMMANDS NOT IN TCL BUT THAT SHOULD BE IN JIM
 
 - Set commands: [lunion], [lintersect], and [ldifference]
 
+  Currently implemented in listext.tcl. A C version would be preferable.
+
 EXTENSIONS
 
 - Cryptography: hash functions, block ciphers, strim ciphers, PRNGs.

@@ -33,6 +33,7 @@ options {
         history   - Tcl access to interactive history
         readdir   - Required for glob
         package   - Package management with the package command
+        listext   - Tcl-extension providing [lintersect], [lunion] and [ldifference]
         load      - Load binary extensions at runtime with load or package
         posix     - Posix APIs including os.fork, os.wait, pid
         regexp    - Tcl-compatible regexp, regsub commands
@@ -225,6 +226,7 @@ dict set extdb attrs {
     file         {}
     glob         { tcl }
     history      {}
+    listext      { tcl }
     load         { static }
     mk           { cpp optional }
     namespace    { static }

@@ -60,88 +60,88 @@ typedef enum AlgoType {
 } AlgoType;
 
 int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
-	     EVP_CIPHER_CTX *ctx, AES_Mode mode, AlgoType algo)
+         EVP_CIPHER_CTX *ctx, AES_Mode mode, AlgoType algo)
 {
-	int rounds, ret, def_key_len;
-	unsigned char key[EVP_MAX_KEY_LENGTH], iv[EVP_MAX_IV_LENGTH];
-	const EVP_CIPHER *type;
+    int rounds, ret, def_key_len;
+    unsigned char key[EVP_MAX_KEY_LENGTH], iv[EVP_MAX_IV_LENGTH];
+    const EVP_CIPHER *type;
 
-	switch (algo) {
-	case AES_128_ECB:
-	    rounds = 1;
-		def_key_len = 16;
-		type = EVP_aes_128_ecb();
-		break;
-	case AES_192_ECB:
-	    rounds = 1;
-		def_key_len = 24;
-		type = EVP_aes_192_ecb();
-		break;
-	case AES_256_ECB:
-	    rounds = 1;
-		def_key_len = 32;
-		type = EVP_aes_256_ecb();
-	case AES_128_CBC:
-	    rounds = 1;
-		def_key_len = 16;
-		type = EVP_aes_128_cbc();
-		break;
-	case AES_192_CBC:
-	    rounds = 1;
-		def_key_len = 24;
-		type = EVP_aes_192_cbc();
-		break;
-	case AES_256_CBC:
-	    rounds = 1;
-		def_key_len = 32;
-		type = EVP_aes_256_cbc();
-		break;
-	default:
-		return -1;
-	}
+    switch (algo) {
+    case AES_128_ECB:
+        rounds = 1;
+        def_key_len = 16;
+        type = EVP_aes_128_ecb();
+        break;
+    case AES_192_ECB:
+        rounds = 1;
+        def_key_len = 24;
+        type = EVP_aes_192_ecb();
+        break;
+    case AES_256_ECB:
+        rounds = 1;
+        def_key_len = 32;
+        type = EVP_aes_256_ecb();
+    case AES_128_CBC:
+        rounds = 1;
+        def_key_len = 16;
+        type = EVP_aes_128_cbc();
+        break;
+    case AES_192_CBC:
+        rounds = 1;
+        def_key_len = 24;
+        type = EVP_aes_192_cbc();
+        break;
+    case AES_256_CBC:
+        rounds = 1;
+        def_key_len = 32;
+        type = EVP_aes_256_cbc();
+        break;
+    default:
+        return -1;
+    }
 
-	ret = EVP_BytesToKey(type, EVP_md5(), salt, (unsigned char*)key_data, key_data_len, rounds, key, iv);
-	if (ret != def_key_len) {
-		return -1;
-	}
+    ret = EVP_BytesToKey(type, EVP_md5(), salt, (unsigned char*)key_data, key_data_len, rounds, key, iv);
+    if (ret != def_key_len) {
+        return -1;
+    }
 
-	EVP_CIPHER_CTX_init(ctx);
-	switch (mode) {
-	case AES_MODE_ENCRYPTION:
-		EVP_EncryptInit_ex(ctx, type, NULL, key, iv);
-		break;
-	case AES_MODE_DECRYPTION:
-		EVP_DecryptInit_ex(ctx, type, NULL, key, iv);
-		break;
-	default:
-		break;
-	}
+    EVP_CIPHER_CTX_init(ctx);
+    switch (mode) {
+    case AES_MODE_ENCRYPTION:
+        EVP_EncryptInit_ex(ctx, type, NULL, key, iv);
+        break;
+    case AES_MODE_DECRYPTION:
+        EVP_DecryptInit_ex(ctx, type, NULL, key, iv);
+        break;
+    default:
+        break;
+    }
 
-	return 0;
+    return 0;
 }
 
 int aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
 {
-	int olen = *olenp;
-	int flen = 0;
+    int olen = *olenp;
+    int flen = 0;
 
-	EVP_EncryptUpdate(e, out, &olen, in, ilen);
-	EVP_EncryptFinal_ex(e, out + olen, &flen);
+    EVP_EncryptUpdate(e, out, &olen, in, ilen);
+    EVP_EncryptFinal_ex(e, out + olen, &flen);
 
-	*olenp = olen + flen;
-	return 0;
+    *olenp = olen + flen;
+    return 0;
 }
 
 int aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
 {
-	int olen = *olenp;
-	int flen = 0;
+    int olen = *olenp;
+    int flen = 0;
 
-	EVP_DecryptUpdate(e, out, &olen, in, ilen);
-	EVP_DecryptFinal_ex(e, out + olen, &flen);
+    EVP_DecryptUpdate(e, out, &olen, in, ilen);
+    EVP_DecryptFinal_ex(e, out + olen, &flen);
 
-	*olenp = olen + flen;
-	return 0;
+    *olenp = olen + flen;
+    return 0;
 }
 
 static int

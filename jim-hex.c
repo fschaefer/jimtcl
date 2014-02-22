@@ -39,48 +39,48 @@
 char *
 hex_encode(const char *bin, int len)
 {
-	int i, idx;
-	char hex_char[] = "0123456789ABCDEF";
+    int i, idx;
+    char hex_char[] = "0123456789ABCDEF";
     char *hex = Jim_Alloc(len * 2 + 1);
 
-	for (i=0, idx=0; i<len; i++)
-	{
-		hex[idx++] = hex_char[(bin[i] & 0xf0) >> 4];
-		hex[idx++] = hex_char[bin[i] & 0x0f];
-	}
+    for (i=0, idx=0; i<len; i++)
+    {
+        hex[idx++] = hex_char[(bin[i] & 0xf0) >> 4];
+        hex[idx++] = hex_char[bin[i] & 0x0f];
+    }
 
-	hex[idx] = '\0';
-	return hex;
+    hex[idx] = '\0';
+    return hex;
 }
 
 void *
 hex_decode(const char *hex)
 {
-	int i, idx;
-	char bytes[2];
+    int i, idx;
+    char bytes[2];
     int len = strlen(hex) / 2;
     char *bin = Jim_Alloc(len + 1);
 
-	for (i=0, idx=0; hex[i]; i++)
-	{
-		if (hex[i & 0x01] == 0)
-			return NULL; // hex length != even
+    for (i=0, idx=0; hex[i]; i++)
+    {
+        if (hex[i & 0x01] == 0)
+            return NULL; // hex length != even
 
-		if (hex[i] >= '0' && hex[i] <= '9')
-			bytes[i & 0x01] = hex[i] - '0';
-		else if (hex[i] >= 'A' && hex[i] <= 'F')
-			bytes[i & 0x01] = hex[i] - 'A' + 10;
-		else if (hex[i] >= 'a' && hex[i] <= 'f')
-			bytes[i & 0x01] = hex[i] - 'a' + 10;
+        if (hex[i] >= '0' && hex[i] <= '9')
+            bytes[i & 0x01] = hex[i] - '0';
+        else if (hex[i] >= 'A' && hex[i] <= 'F')
+            bytes[i & 0x01] = hex[i] - 'A' + 10;
+        else if (hex[i] >= 'a' && hex[i] <= 'f')
+            bytes[i & 0x01] = hex[i] - 'a' + 10;
 
-		if (i & 0x01) {
-			bin[idx++] = (bytes[0] << 4) | bytes[1];
-		}
-	}
+        if (i & 0x01) {
+            bin[idx++] = (bytes[0] << 4) | bytes[1];
+        }
+    }
 
     bin[idx++] = '\0';
 
-	return bin;
+    return bin;
 }
 
 static int hex_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)

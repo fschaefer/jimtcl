@@ -45,7 +45,7 @@ static zctx_t *ctx = NULL;
 static int ctx_refc = 0;
 
 static void
-JimZeromqDelContextProc(Jim_Interp *interp, void *privData)
+zeromq_delete_context(Jim_Interp *interp, void *privData)
 {
     JIM_NOTUSED(interp);
 
@@ -60,7 +60,7 @@ JimZeromqDelContextProc(Jim_Interp *interp, void *privData)
 }
 
 static void
-JimZeromqDelSocketProc(Jim_Interp *interp, void *privData)
+zeromq_delete_socket(Jim_Interp *interp, void *privData)
 {
     JIM_NOTUSED(interp);
 
@@ -76,7 +76,7 @@ enum {
 };
 
 static int
-JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     void *socket = Jim_CmdPrivData(interp);
 
@@ -339,7 +339,7 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 }
 
 static int
-Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+zeromq_socket_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     if (argc != 2) {
         goto wrong_args;
@@ -392,7 +392,7 @@ Zeromq_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
     char buffer[60];
     snprintf(buffer, sizeof(buffer), "zeromq.socket%ld", Jim_GetId(interp));
-    Jim_CreateCommand(interp, buffer, JimZeromqHandlerCommand, socket, JimZeromqDelSocketProc);
+    Jim_CreateCommand(interp, buffer, zeromq_socket_handler, socket, zeromq_delete_socket);
 
     Jim_SetResult(interp, Jim_MakeGlobalNamespaceName(interp, Jim_NewStringObj(interp, buffer, -1)));
     return JIM_OK;
@@ -404,7 +404,7 @@ wrong_args:
 
 zmq_error:
 
-    JimZeromqDelContextProc(interp, (void*)ctx);
+    zeromq_delete_context(interp, (void*)ctx);
 
     Jim_SetResultFormatted(interp, "error %d: %s\n", errno, zmq_strerror(errno));
     return JIM_ERR;
@@ -416,6 +416,6 @@ Jim_zeromqInit(Jim_Interp *interp)
     if (Jim_PackageProvide(interp, "zeromq", "0.1", JIM_ERRMSG))
         return JIM_ERR;
 
-    Jim_CreateCommand(interp, "zeromq.new", Zeromq_Cmd, NULL, JimZeromqDelContextProc);
+    Jim_CreateCommand(interp, "zeromq.socket.new", zeromq_socket_new_cmd, NULL, zeromq_delete_context);
     return JIM_OK;
 }

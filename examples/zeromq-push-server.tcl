@@ -1,6 +1,6 @@
 
 #open pushing socket
-set socket [zeromq.new PUSH]
+set socket [zeromq.socket.new PUSH]
 $socket bind tcp://*:5000
 
 # encryption key

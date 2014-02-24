@@ -1,6 +1,6 @@
 
 # open subscriber socket
-set socket [zeromq.new SUB]
+set socket [zeromq.socket.new SUB]
 $socket connect tcp://localhost:5000
 $socket sockopt SUBSCRIBE ""
 

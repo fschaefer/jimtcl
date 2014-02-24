@@ -1,6 +1,6 @@
 
 #open publisher socket
-set socket [zeromq.new PUB]
+set socket [zeromq.socket.new PUB]
 $socket bind tcp://*:5000
 
 # encryption key

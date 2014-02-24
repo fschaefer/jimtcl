@@ -3,7 +3,7 @@
 # (c) 2014 Florian Schäfer <florian.schaefer@gmail.com>
 #
 
-proc {zeromq.open} {args} {
+proc {zeromq.socket.open} {args} {
 
     set argc [llength $args]
     if {$argc < 2 || $argc > 4} {
@@ -26,7 +26,7 @@ proc {zeromq.open} {args} {
 
     set endpoint [lindex $args [expr $argc - 1]]
 
-    set socket [zeromq.new $type]
+    set socket [zeromq.socket.new $type]
     if {$bind} {
         $socket bind $endpoint
     } else {

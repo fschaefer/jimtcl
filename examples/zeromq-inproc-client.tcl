@@ -1,12 +1,12 @@
 
-set pipe1_output [zeromq.new PAIR]
+set pipe1_output [zeromq.socket.new PAIR]
 $pipe1_output bind {inproc://#1}
-set pipe1_input [zeromq.new PAIR]
+set pipe1_input [zeromq.socket.new PAIR]
 $pipe1_input connect {inproc://#1}
 
-set pipe2_output [zeromq.new PAIR]
+set pipe2_output [zeromq.socket.new PAIR]
 $pipe2_output bind {inproc://#2}
-set pipe2_input [zeromq.new PAIR]
+set pipe2_input [zeromq.socket.new PAIR]
 $pipe2_input connect {inproc://#2}
 
 sleep 2

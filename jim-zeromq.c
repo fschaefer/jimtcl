@@ -326,7 +326,7 @@ JimZeromqHandlerCommand(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
         const char *message;
         message = Jim_String(argv[2]);
-        rc = zstr_send(socket, message);
+        rc = zstr_send(socket, "%s", message);
 
         if (rc != 0) {
             Jim_SetResultString(interp, "Failed to send message", -1);

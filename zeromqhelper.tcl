@@ -1,4 +1,4 @@
-# Implements script-based implementation of zeromq.open
+# Implements script-based implementation of zeromq.socket.open
 #
 # (c) 2014 Florian Schäfer <florian.schaefer@gmail.com>
 #

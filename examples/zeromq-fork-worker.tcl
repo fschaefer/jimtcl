@@ -4,7 +4,7 @@ foreach i $forks {
     puts "starting worker $i"
 
     if {[os.fork] == 0} {
-        set ipc [zeromq.open PUSH ipc:///tmp/workers]
+        set ipc [zeromq.socket.open PUSH ipc:///tmp/workers]
 
         # do some work
         sleep [expr {5+round(rand()*10)}]
@@ -15,7 +15,7 @@ foreach i $forks {
     }
 }
 
-set ipc [zeromq.open -bind PULL ipc:///tmp/workers]
+set ipc [zeromq.socket.open -bind PULL ipc:///tmp/workers]
 
 set complete [llength $forks]
 

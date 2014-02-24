@@ -45,7 +45,7 @@ static zctx_t *ctx = NULL;
 static int ctx_refc = 0;
 
 static void
-zeromq_delete_context(Jim_Interp *interp, void *privData)
+zeromq_delete_context(Jim_Interp *interp, void *data)
 {
     JIM_NOTUSED(interp);
 
@@ -60,20 +60,13 @@ zeromq_delete_context(Jim_Interp *interp, void *privData)
 }
 
 static void
-zeromq_delete_socket(Jim_Interp *interp, void *privData)
+zeromq_delete_socket(Jim_Interp *interp, void *data)
 {
     JIM_NOTUSED(interp);
 
-    void *socket = privData;
+    void *socket = data;
     zsocket_destroy(ctx, socket);
 }
-
-static const char * const options[] = {
-    "bind", "close", "connect", "disconnect", "interrupted", "sockopt", "receive", "send", NULL
-};
-enum {
-    OPT_BIND, OPT_CLOSE, OPT_CONNECT, OPT_DISCONNECT, OPT_INTERRUPTED, OPT_SOCKOPT, OPT_RECEIVE, OPT_SEND
-};
 
 static int
 zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
@@ -83,12 +76,20 @@ zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     int rc = 0;
     int option;
 
+    const char * const options[] = {
+        "bind", "close", "connect", "disconnect", "interrupted", "sockopt", "receive", "send", NULL
+    };
+
+    enum {
+        OPT_BIND, OPT_CLOSE, OPT_CONNECT, OPT_DISCONNECT, OPT_INTERRUPTED, OPT_SOCKOPT, OPT_RECEIVE, OPT_SEND
+    };
+
     if (argc < 2) {
         Jim_WrongNumArgs(interp, 1, argv, "method ?args ...?");
         return JIM_ERR;
     }
 
-    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq method", JIM_ERRMSG) != JIM_OK)
+    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.socket method", JIM_ERRMSG) != JIM_OK)
         return JIM_ERR;
 
     if (option == OPT_BIND || option == OPT_CONNECT) {
@@ -259,6 +260,42 @@ zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
             }
 
         }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "RCVTIMEO")) {
+
+            if (argc == 4) {
+
+                long rcvtimeo;
+
+                if (Jim_GetLong(interp, argv[3], &rcvtimeo) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_rcvtimeo(socket, (int)rcvtimeo);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_rcvtimeo(socket)));
+            }
+
+        }
+        else if (Jim_CompareStringImmediate(interp, argv[2], "SNDTIMEO")) {
+
+            if (argc == 4) {
+
+                long sndtimeo;
+
+                if (Jim_GetLong(interp, argv[3], &sndtimeo) != JIM_OK) {
+                    return JIM_ERR;
+                }
+
+                zsocket_set_sndtimeo(socket, (int)sndtimeo);
+
+            }
+            else {
+                Jim_SetResult(interp, Jim_NewIntObj(interp, zsocket_sndtimeo(socket)));
+            }
+
+        }
         else if (Jim_CompareStringImmediate(interp, argv[2], "SUBSCRIBE")) {
 
             const char* subscribe = "";
@@ -280,7 +317,7 @@ zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
         }
         else {
-            Jim_WrongNumArgs(interp, 2, argv, "option=BACKLOCK|IDENTITY|LINGER|RCVHWM|SNDHWM|SUBSCRIBE|UNSUBSCRIBE ?value?");
+            Jim_WrongNumArgs(interp, 2, argv, "option=BACKLOG|IDENTITY|LINGER|RCVHWM|SNDHWM|SNDTIMEO|RCVTIMEO|SUBSCRIBE|UNSUBSCRIBE ?value?");
             return JIM_ERR;
         }
 
@@ -410,6 +447,195 @@ zmq_error:
     return JIM_ERR;
 }
 
+static void
+zeromq_delete_beacon(Jim_Interp *interp, void *data)
+{
+    JIM_NOTUSED(interp);
+
+    zbeacon_t *beacon = (zbeacon_t *)data;
+    zbeacon_destroy(&beacon);
+}
+
+static int
+zeromq_beacon_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+{
+    zbeacon_t *beacon = Jim_CmdPrivData(interp);
+
+    int option;
+
+    const char * const options[] = {
+        "close", "hostname", "interval", "noecho", "publish", "silence", "subscribe", "unsubscribe", "socket", NULL
+    };
+
+    enum {
+        OPT_CLOSE, OPT_HOSTNAME, OPT_INTERVAL, OPT_NOECHO, OPT_PUBLISH, OPT_SILENCE, OPT_SUBSCRIBE, OPT_UNSUBSCRIBE, OPT_SOCKET
+    };
+
+    if (argc < 2) {
+        Jim_WrongNumArgs(interp, 1, argv, "method ?args ...?");
+        return JIM_ERR;
+    }
+
+    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.beacon method", JIM_ERRMSG) != JIM_OK)
+        return JIM_ERR;
+
+    if (option == OPT_CLOSE) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        Jim_DeleteCommand(interp, Jim_String(argv[0]));
+
+    }
+    else if (option == OPT_HOSTNAME) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        const char *hostname;
+        hostname = zbeacon_hostname(beacon);
+
+        Jim_SetResultString(interp, hostname, -1);
+
+    }
+    else if (option == OPT_INTERVAL) {
+
+        if (argc != 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "milliseconds");
+            return JIM_ERR;
+        }
+
+        long interval;
+
+        if (Jim_GetLong(interp, argv[2], &interval) != JIM_OK) {
+            return JIM_ERR;
+        }
+
+        zbeacon_set_interval(beacon, (int)interval);
+
+    }
+    else if (option == OPT_NOECHO) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        zbeacon_noecho(beacon);
+
+    }
+    else if (option == OPT_PUBLISH) {
+
+        if (argc != 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "message");
+            return JIM_ERR;
+        }
+
+        const char *message;
+        message = Jim_String(argv[2]);
+
+        zbeacon_publish(beacon, (byte*)message, strlen(message));
+
+    }
+    else if (option == OPT_SILENCE) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        zbeacon_silence(beacon);
+
+    }
+    else if (option == OPT_SUBSCRIBE) {
+
+        if (argc < 2 || argc > 3) {
+            Jim_WrongNumArgs(interp, 2, argv, "filter");
+            return JIM_ERR;
+        }
+
+        const char *filter = 0;
+        int filter_len = 0;
+
+        if (argc == 3) {
+            filter = Jim_String(argv[2]);
+            filter_len = strlen(filter);
+        }
+
+        zbeacon_subscribe(beacon, (byte*)filter, filter_len);
+
+    }
+    else if (option == OPT_UNSUBSCRIBE) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        zbeacon_unsubscribe(beacon);
+
+    }
+    else if (option == OPT_SOCKET) {
+
+        if (argc != 2) {
+            Jim_WrongNumArgs(interp, 2, argv, "");
+            return JIM_ERR;
+        }
+
+        void *socket = zbeacon_socket(beacon);
+
+        char buffer[60];
+        snprintf(buffer, sizeof(buffer), "zeromq.socket%ld", Jim_GetId(interp));
+        Jim_CreateCommand(interp, buffer, zeromq_socket_handler, socket, NULL);
+
+        Jim_SetResult(interp, Jim_MakeGlobalNamespaceName(interp, Jim_NewStringObj(interp, buffer, -1)));
+
+    }
+
+    return JIM_OK;
+}
+
+static int
+zeromq_beacon_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+{
+    if (argc != 2) {
+        goto wrong_args;
+    }
+
+    long port;
+
+    if (Jim_GetLong(interp, argv[1], &port) != JIM_OK) {
+        goto wrong_args;
+    }
+
+    zbeacon_t *beacon = zbeacon_new(port);
+
+    if (beacon == NULL) {
+        goto zmq_error;
+    }
+
+    char buffer[60];
+    snprintf(buffer, sizeof(buffer), "zeromq.beacon%ld", Jim_GetId(interp));
+    Jim_CreateCommand(interp, buffer, zeromq_beacon_handler, beacon, zeromq_delete_beacon);
+
+    Jim_SetResult(interp, Jim_MakeGlobalNamespaceName(interp, Jim_NewStringObj(interp, buffer, -1)));
+    return JIM_OK;
+
+wrong_args:
+
+    Jim_WrongNumArgs(interp, 1, argv, "port");
+    return JIM_ERR;
+
+zmq_error:
+
+    Jim_SetResultFormatted(interp, "error %d: %s\n", errno, zmq_strerror(errno));
+    return JIM_ERR;
+}
+
 int
 Jim_zeromqInit(Jim_Interp *interp)
 {
@@ -417,5 +643,7 @@ Jim_zeromqInit(Jim_Interp *interp)
         return JIM_ERR;
 
     Jim_CreateCommand(interp, "zeromq.socket.new", zeromq_socket_new_cmd, NULL, zeromq_delete_context);
+    Jim_CreateCommand(interp, "zeromq.beacon.new", zeromq_beacon_new_cmd, NULL, NULL);
+
     return JIM_OK;
 }

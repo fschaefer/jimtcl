@@ -602,7 +602,7 @@ zeromq_beacon_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 static int
 zeromq_beacon_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-    if (argc != 2) {
+    if (argc < 2 || argc > 3) {
         goto wrong_args;
     }
 
@@ -610,6 +610,12 @@ zeromq_beacon_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
     if (Jim_GetLong(interp, argv[1], &port) != JIM_OK) {
         goto wrong_args;
+    }
+
+    if (argc == 3) {
+        const char* interface = Jim_String(argv[2]);
+        Jim_IncrRefCount(argv[2]);
+        zsys_set_interface((char*)interface);
     }
 
     zbeacon_t *beacon = zbeacon_new(port);
@@ -627,7 +633,7 @@ zeromq_beacon_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 
 wrong_args:
 
-    Jim_WrongNumArgs(interp, 1, argv, "port");
+    Jim_WrongNumArgs(interp, 1, argv, "port ?interface?");
     return JIM_ERR;
 
 zmq_error:

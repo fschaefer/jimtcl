@@ -83,7 +83,8 @@ hex_decode(const char *hex)
     return bin;
 }
 
-static int hex_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+static int
+hex_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     const char *data = Jim_String(argv[0]);
     int len = Jim_Length(argv[0]);
@@ -101,7 +102,8 @@ static int hex_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     return JIM_OK;
 }
 
-static int hex_cmd_decode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+static int
+hex_cmd_decode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     void *data = hex_decode(Jim_String(argv[0]));
 

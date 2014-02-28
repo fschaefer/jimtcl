@@ -5,7 +5,7 @@ set beacon2 [zeromq.beacon.new 4000]
 set socket2 [$beacon2 socket]
 
 $beacon1 interval 2000
-$beacon1 publish foo:blah
+$beacon1 publish foo:bar
 $beacon1 noecho
 
 $beacon2 subscribe foo

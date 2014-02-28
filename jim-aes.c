@@ -43,13 +43,13 @@
 extern char* hex_encode(const char *bin, int len);
 extern void* hex_decode(const char *bin);
 
-typedef enum AES_Mode {
+typedef enum aes_mode_t {
     AES_MODE_ENCRYPTION,
     AES_MODE_DECRYPTION,
     AES_MODE_UNKNOWN
-} AES_Mode;
+} aes_mode_t;
 
-typedef enum AlgoType {
+typedef enum aes_algo_t {
     AES_128_ECB,
     AES_192_ECB,
     AES_256_ECB,
@@ -57,10 +57,11 @@ typedef enum AlgoType {
     AES_192_CBC,
     AES_256_CBC,
     AES_NONE
-} AlgoType;
+} aes_algo_t;
 
-int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
-         EVP_CIPHER_CTX *ctx, AES_Mode mode, AlgoType algo)
+int
+aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
+    EVP_CIPHER_CTX *ctx, aes_mode_t mode, aes_algo_t algo)
 {
     int rounds, ret, def_key_len;
     unsigned char key[EVP_MAX_KEY_LENGTH], iv[EVP_MAX_IV_LENGTH];
@@ -120,7 +121,8 @@ int aes_init(const char *key_data, int key_data_len, unsigned char *salt, \
     return 0;
 }
 
-int aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
+int
+aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
 {
     int olen = *olenp;
     int flen = 0;
@@ -132,7 +134,8 @@ int aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *o
     return 0;
 }
 
-int aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
+int
+aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *in, int ilen, unsigned char *out, int *olenp)
 {
     int olen = *olenp;
     int flen = 0;
@@ -151,7 +154,7 @@ aes_cmd_encrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         goto wrong_args;
     }
 
-    AlgoType type = AES_256_CBC;
+    aes_algo_t type = AES_256_CBC;
 
     if (argc == 4) {
         if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {
@@ -227,7 +230,7 @@ aes_cmd_decrypt(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         goto wrong_args;
     }
 
-    AlgoType type = AES_256_CBC;
+    aes_algo_t type = AES_256_CBC;
 
     if (argc == 4) {
         if (Jim_CompareStringImmediate(interp, argv[1], "AES_128_ECB")) {

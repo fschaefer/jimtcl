@@ -176,7 +176,8 @@ base64_decode(const char *str)
     return data;
 }
 
-static int base64_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+static int
+base64_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     const char *data = Jim_String(argv[0]);
     int len = Jim_Length(argv[0]);
@@ -195,7 +196,8 @@ static int base64_cmd_encode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
     return JIM_OK;
 }
 
-static int base64_cmd_decode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
+static int
+base64_cmd_decode(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
     void *data = base64_decode(Jim_String(argv[0]));
 

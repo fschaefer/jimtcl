@@ -71,10 +71,10 @@
 #define MAX_HMAC_SIZE   (512 / 8)
 #define MAX_BLOCK_SIZE  (512 / 8)
 
-struct thotp_blob {
+typedef struct thotp_blob_t {
     unsigned char *data;
     size_t length;
-};
+} thotp_blob_t;
 
 enum thotp_alg {
     thotp_alg_sha1,
@@ -86,9 +86,8 @@ enum thotp_alg {
 
 static int
 thotp_digest_base(unsigned char *data1, size_t data1_size, unsigned char pad,
-          unsigned char *data2_value, size_t data2_size,
-          enum thotp_alg algorithm,
-          unsigned char *out, size_t space, size_t *space_used)
+    unsigned char *data2_value, size_t data2_size, enum thotp_alg algorithm,
+    unsigned char *out, size_t space, size_t *space_used)
 {
     size_t hmac_size, block_size;
     unsigned char block[MAX_BLOCK_SIZE];
@@ -153,10 +152,9 @@ thotp_digest_base(unsigned char *data1, size_t data1_size, unsigned char pad,
 }
 
 static int
-thotp_hmac_base(struct thotp_blob *key,
-        unsigned char *counter_value, size_t counter_size,
-        enum thotp_alg algorithm,
-        unsigned char *out, size_t space, size_t *space_used)
+thotp_hmac_base(thotp_blob_t *key, unsigned char *counter_value,
+    size_t counter_size, enum thotp_alg algorithm, unsigned char *out,
+    size_t space, size_t *space_used)
 {
     unsigned char buf2[space];
     int result;
@@ -174,8 +172,8 @@ thotp_hmac_base(struct thotp_blob *key,
 }
 
 int
-thotp_hmac(struct thotp_blob *key, uint64_t counter, enum thotp_alg algorithm,
-       unsigned char *out, size_t space, size_t *space_used)
+thotp_hmac(thotp_blob_t *key, uint64_t counter, enum thotp_alg algorithm,
+    unsigned char *out, size_t space, size_t *space_used)
 {
     unsigned char counter_value[64 / 8];
     int i;
@@ -214,9 +212,8 @@ thotp_truncate(unsigned char *hmac, size_t hmac_size, int digits, char *data)
 }
 
 int
-thotp_hotp(struct thotp_blob *key,
-       enum thotp_alg algorithm, uint64_t counter, int digits,
-       char **code)
+thotp_hotp(thotp_blob_t *key, enum thotp_alg algorithm, uint64_t counter,
+    int digits, char **code)
 {
     unsigned char hmac[MAX_HMAC_SIZE];
     size_t hmac_size;
@@ -249,9 +246,8 @@ thotp_hotp(struct thotp_blob *key,
 }
 
 int
-thotp_totp(struct thotp_blob *key,
-       enum thotp_alg algorithm, uint64_t step, time_t when, int digits,
-       char **code)
+thotp_totp(thotp_blob_t *key, enum thotp_alg algorithm, uint64_t step,
+    time_t when, int digits, char **code)
 {
     return thotp_hotp(key, algorithm, (when / step), digits, code);
 }
@@ -259,7 +255,7 @@ thotp_totp(struct thotp_blob *key,
 static const char b32alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 int
-thotp_base32_parse(const char *base32, struct thotp_blob **blob)
+thotp_base32_parse(const char *base32, thotp_blob_t **blob)
 {
     unsigned char buf[5];
     unsigned int counter, v;
@@ -344,7 +340,7 @@ thotp_base32_parse(const char *base32, struct thotp_blob **blob)
 }
 
 int
-thotp_base32_unparse(struct thotp_blob *blob, char **base32)
+thotp_base32_unparse(thotp_blob_t *blob, char **base32)
 {
     size_t length;
     unsigned int i, j;
@@ -405,7 +401,7 @@ thotp_base32_unparse(struct thotp_blob *blob, char **base32)
 static int
 Hotp_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-    struct thotp_blob *key = NULL;
+    thotp_blob_t *key = NULL;
     char *code = NULL, *p;
     unsigned long long counter;
 
@@ -453,7 +449,7 @@ free:
 static int
 Totp_Cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 {
-    struct thotp_blob *key = NULL;
+    thotp_blob_t *key = NULL;
     char *code = NULL;
 
     int rc = JIM_OK;

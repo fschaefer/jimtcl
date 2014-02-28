@@ -36,9 +36,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include <czmq.h>
 
+#include "jimautoconf.h"
 #include <jim.h>
 
 static zctx_t *ctx = NULL;
@@ -617,6 +620,13 @@ zeromq_beacon_new_cmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         Jim_IncrRefCount(argv[2]);
         zsys_set_interface((char*)interface);
     }
+
+#ifdef HAVE_GETEUID
+    if (port < 1024 && geteuid() != 0) {
+        Jim_SetResultFormatted(interp, "error: %s\n", "user does not have permission to use privileged ports");
+        return JIM_ERR;
+    }
+#endif
 
     zbeacon_t *beacon = zbeacon_new(port);
 

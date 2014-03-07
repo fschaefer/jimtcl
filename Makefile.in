@@ -205,6 +205,10 @@ hex.so: jim-hex.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-hex.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-hex.o $(SH_LIBJIM) @LDLIBS_hex@
 
+interp.so: jim-interp.c
+	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-interp.o $> $^
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-interp.o $(SH_LIBJIM) @LDLIBS_interp@
+
 md5.so: jim-md5.c
 	$(CC) $(CFLAGS) $(SHOBJ_CFLAGS) -c -o jim-md5.o $> $^
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SHOBJ_LDFLAGS) -o $@ jim-md5.o $(SH_LIBJIM) @LDLIBS_md5@

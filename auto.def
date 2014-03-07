@@ -58,6 +58,7 @@ options {
         aes       - AES_ECB_128 and AES_CBC_256 en- and decryption
         base64    - Base64 en- and decoding
         hex       - HEX en- and decoding
+        interp    - Create (safe) slave TCL interpreters
         md5       - Provide command for MD5 hashing
         thotp     - Provide totp / hotp command for One-Time Password generation
         z85       - Z85 en- and decoding
@@ -252,6 +253,7 @@ dict set extdb attrs {
     aes          { optional }
     base64       { optional }
     hex          { optional }
+    interp       { optional }
     md5          { optional }
     thotp        { optional }
     z85          { optional }

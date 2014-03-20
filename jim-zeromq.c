@@ -92,7 +92,7 @@ zeromq_socket_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         return JIM_ERR;
     }
 
-    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.socket method", JIM_ERRMSG) != JIM_OK)
+    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.socket method", JIM_ERRMSG | JIM_ENUM_ABBREV) != JIM_OK)
         return JIM_ERR;
 
     if (option == OPT_BIND || option == OPT_CONNECT) {
@@ -479,7 +479,7 @@ zeromq_beacon_handler(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
         return JIM_ERR;
     }
 
-    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.beacon method", JIM_ERRMSG) != JIM_OK)
+    if (Jim_GetEnum(interp, argv[1], options, &option, "zeromq.beacon method", JIM_ERRMSG | JIM_ENUM_ABBREV) != JIM_OK)
         return JIM_ERR;
 
     if (option == OPT_CLOSE) {

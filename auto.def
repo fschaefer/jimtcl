@@ -55,7 +55,7 @@ options {
         sqlite3   - Interface to sqlite3
         win32     - Interface to win32
 
-        aes       - AES_ECB_128 and AES_CBC_256 en- and decryption
+        aes       - AES en- and decryption
         base64    - Base64 en- and decoding
         hex       - HEX en- and decoding
         interp    - Create (safe) slave TCL interpreters
